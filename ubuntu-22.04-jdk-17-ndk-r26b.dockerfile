@@ -1,5 +1,5 @@
 # Base Image
-FROM ubuntu:jammy-20240614
+FROM ubuntu:jammy-20240911.1
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
