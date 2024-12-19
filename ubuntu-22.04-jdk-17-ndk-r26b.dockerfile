@@ -27,8 +27,7 @@ RUN npm install -g yarn@1.22.21
 RUN npm install -g pnpm@9.3.0
 
 # Install Bun 1.1.13
-RUN curl -fsSL https://bun.sh/install | bash && \
-    mv /root/.bun/bin/bun /usr/local/bin/bun
+RUN curl -fsSL https://bun.sh/install | bash
 
 # Install Android NDK r26 (26.1.10909125)
 RUN mkdir -p /opt/android-sdk && \
