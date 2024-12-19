@@ -26,8 +26,6 @@ RUN npm install -g yarn@1.22.21
 # Install pnpm 9.3.0
 RUN npm install -g pnpm@9.3.0
 
-# Install Bun 1.1.13
-RUN curl -fsSL https://bun.sh/install | bash
 
 # Install Android NDK r26 (26.1.10909125)
 RUN mkdir -p /opt/android-sdk && \
@@ -43,6 +41,14 @@ ENV ANDROID_NDK_HOME=/opt/android-sdk/ndk
 
 # Install node-gyp 10.1.0
 RUN npm install -g node-gyp@10.1.0
+
+# Install Bun 1.1.13
+RUN curl -fsSL https://bun.sh/install | bash
+
+
+COPY .npmrc ~/.npmrc
+COPY .yarnrc.yaml ~/.yarnrc.yaml
+COPY .gradle/gradle.properties ~/.gradle/gradle.properties
 
 
 # Default command

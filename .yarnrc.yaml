@@ -1,0 +1,5 @@
+unsafeHttpWhitelist:
+  - '*'
+npmRegistryServer: 'http://10.4.0.19:4873'
+enableImmutableInstalls: false
+
