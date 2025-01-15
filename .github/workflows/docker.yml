@@ -34,10 +34,5 @@ jobs:
           file: ubuntu-22.04-jdk-17-ndk-r26b.dockerfile # Specify the Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/ubuntu-22.04-jdk-17-ndk-r26b:latest
-            ${{ secrets.DOCKER_USERNAME }}/ubuntu-22.04-jdk-17-ndk-r26b:sdk-51
-
-      # Optional: Test the built image
-      - name: Test Docker Image
-        run: |
-          docker run --rm ${{ secrets.DOCKER_USERNAME }}/custom-ndk-nodejs:latest node --version
+            ${{ secrets.DOCKER_USERNAME }}/expo_android_builder:latest
+            ${{ secrets.DOCKER_USERNAME }}/expo_android_builder:sdk-51

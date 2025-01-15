@@ -8,12 +8,27 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     curl \
     wget \
+    unzip \
     gnupg \
     build-essential \
     python3 \
     python3-pip \
     openjdk-17-jdk \
+    android-sdk \
     && apt-get clean
+
+COPY .gradle/gradle.properties /root/.gradle/gradle.properties
+
+
+RUN wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip && unzip commandlinetools-linux-9477386_latest.zip
+RUN wget https://dl.google.com/android/repository/platform-tools-latest-linux.zip && unzip platform-tools-latest-linux.zip
+RUN mkdir -p /android-sdk/cmdline-tools/latest && mv ./cmdline-tools/* ./android-sdk/cmdline-tools/latest
+RUN mkdir -p /android-sdk/platform-tools && mv ./platform-tools/* ./android-sdk/platform-tools
+ENV PATH=/android-sdk/cmdline-tools/latest/bin:$PATH
+ENV ANDROID_SDK_ROOT=/android-sdk
+ENV EAS_NO_VCS=1
+RUN yes | sdkmanager --licenses
+
 
 # Install Node.js 18.18.0
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
@@ -44,12 +59,18 @@ RUN npm install -g node-gyp@10.1.0
 
 # Install Bun 1.1.13
 RUN curl -fsSL https://bun.sh/install | bash
+ENV BUN_INSTALL=/root/.bun
+ENV PATH=$BUN_INSTALL/bin:$PATH
 
 
-COPY .npmrc ~/.npmrc
-COPY .yarnrc.yaml ~/.yarnrc.yaml
-COPY .gradle/gradle.properties ~/.gradle/gradle.properties
+RUN bun install -g eas-cli
 
 
+# WORKDIR root
+# COPY .npmrc /root/.npmrc
+# COPY .yarnrc.yaml /root/.yarnrc.yaml
+
+
+ENV EAS_NO_VCS 1
 # Default command
 CMD ["bash"]
