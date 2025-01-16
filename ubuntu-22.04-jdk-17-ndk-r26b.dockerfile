@@ -3,6 +3,7 @@ FROM ubuntu:jammy-20240911.1
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /
 
 # Install prerequisites
 RUN apt-get update && apt-get install -y \
@@ -14,63 +15,41 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     openjdk-17-jdk \
-    android-sdk \
-    && apt-get clean
-
-COPY .gradle/gradle.properties /root/.gradle/gradle.properties
-
-
-RUN wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip && unzip commandlinetools-linux-9477386_latest.zip
-RUN wget https://dl.google.com/android/repository/platform-tools-latest-linux.zip && unzip platform-tools-latest-linux.zip
-RUN mkdir -p /android-sdk/cmdline-tools/latest && mv ./cmdline-tools/* ./android-sdk/cmdline-tools/latest
-RUN mkdir -p /android-sdk/platform-tools && mv ./platform-tools/* ./android-sdk/platform-tools
-ENV PATH=/android-sdk/cmdline-tools/latest/bin:$PATH
-ENV ANDROID_SDK_ROOT=/android-sdk
-ENV EAS_NO_VCS=1
-RUN yes | sdkmanager --licenses
+    android-sdk && \
+    rm -rf /var/lib/apt/lists/* &&\
+    apt-get clean
 
 
 # Install Node.js 18.18.0
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
-    npm install -g npm@9.8.1
+    rm -rf /var/lib/apt/lists/* &&\
+    apt-get clean
 
-# Install Yarn 1.22.21
-RUN npm install -g yarn@1.22.21
+RUN npm install -g npm@9.8.1 yarn@1.22.19 pnpm@8.9.2 node-gyp@10.1.0
 
-# Install pnpm 9.3.0
-RUN npm install -g pnpm@9.3.0
+COPY .gradle/gradle.properties /root/.gradle/gradle.properties
 
+# Install Android SDK, NDK r26 (26.1.10909125)
+RUN mkdir -p /android-sdk && cd /android-sdk && \
+    wget https://dl.google.com/android/repository/platform-tools-latest-linux.zip && unzip platform-tools-latest-linux.zip && rm platform-tools-latest-linux.zip && \
+    mkdir -p /android-sdk/ndk && cd /android-sdk/ndk && \
+    wget https://dl.google.com/android/repository/android-ndk-r26b-linux.zip && unzip android-ndk-r26b-linux.zip && rm android-ndk-r26b-linux.zip && mv /android-sdk/ndk/android-ndk-r26b /android-sdk/ndk/26.1.10909125 && \
+    mkdir -p /android-sdk/cmdline-tools && cd /android-sdk/cmdline-tools && \
+    wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip && unzip commandlinetools-linux-7583922_latest.zip && rm commandlinetools-linux-7583922_latest.zip && mv cmdline-tools latest
 
-# Install Android NDK r26 (26.1.10909125)
-RUN mkdir -p /opt/android-sdk && \
-    cd /opt/android-sdk && \
-    wget https://dl.google.com/android/repository/android-ndk-r26b-linux.zip && \
-    apt-get install -y unzip && \
-    unzip android-ndk-r26b-linux.zip && \
-    rm android-ndk-r26b-linux.zip && \
-    ln -s /opt/android-sdk/android-ndk-r26b /opt/android-sdk/ndk
-
-# Set NDK path
-ENV ANDROID_NDK_HOME=/opt/android-sdk/ndk
-
-# Install node-gyp 10.1.0
-RUN npm install -g node-gyp@10.1.0
-
-# Install Bun 1.1.13
-RUN curl -fsSL https://bun.sh/install | bash
-ENV BUN_INSTALL=/root/.bun
-ENV PATH=$BUN_INSTALL/bin:$PATH
+ENV PATH=/android-sdk/cmdline-tools/latest/bin:$PATH
+ENV ANDROID_HOME=/android-sdk
+ENV ANDROID_SDK_ROOT=/android-sdk
+ENV ANDROID_NDK_HOME=/android-sdk/ndk
+ENV EAS_NO_VCS=1
+ENV PATH=/android-sdk/platform-tools:$PATH
+ENV PATH=/android-sdk/tools:$PATH
+ENV PATH=/android-sdk/tools/bin:$PATH
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+RUN yes | sdkmanager --licenses
 
 
-RUN bun install -g eas-cli
-
-
-# WORKDIR root
-# COPY .npmrc /root/.npmrc
-# COPY .yarnrc.yaml /root/.yarnrc.yaml
-
-
-ENV EAS_NO_VCS 1
+RUN npm install -g eas-cli
 # Default command
 CMD ["bash"]
